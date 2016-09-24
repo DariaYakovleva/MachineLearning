@@ -4,10 +4,10 @@ import random
 import matplotlib.pyplot as plt
 
 
-# returns array of [a, b] for k-fold kross-validation"
+# returns array of [a, b] for k-fold Cross-validation"
 # a - array of points [x, y, c] for learning
 # b - array of points [x, y, c] for testing
-def getKrossValidation(k):
+def getCrossValidation(k):
     a = []    
     fin = open("chips.txt", "r") 
     for line in fin.readlines():
@@ -63,7 +63,7 @@ err = 0
 kvNumber = 6
 neighborsNumber = 3
 
-data = getKrossValidation(kvNumber)
+data = getCrossValidation(kvNumber)
 for i, dataSet in enumerate(data):     
 #    if i > 2:
 #        plt.figure(2)
@@ -103,7 +103,22 @@ for i, dataSet in enumerate(data):
     err += (len(e) + len(f)) / len(testSet)
     
 s = "number of neigbors = " + str(neighborsNumber) + ", space = R^2, Euclidean distance\n"
-s += "average error for this 6-fold kross-validation is " + str(err / kvNumber)
+s += "average error for this 6-fold Cross-validation is " + str(err / kvNumber)
 plt.figure(1).suptitle(s, fontsize=14, fontweight='bold')
 
 plt.show()
+
+#TODO
+result = pd.DataFrame(columns=['folds', 'kNN', 'metric', 'accuracy', 'transformation'])
+transformations = [lambda x: x ** 2, lambda x: x ** 0.5]
+metrics = [euclidean, cityblock, cosine, correlation]
+for fold in range(3, 10):
+	for neighbors in range(2, 10):
+	    for metric in metrics:
+    	    for transform in transformations:
+    	    	data = getCrossValidation(fold)
+    	    	curData = data[['x', 'y']].applymap(transform).join(data['class'])
+				testSet = doKNN(data, neighbors)       	 
+       	     	k, accuracy = training(curData, fold, metric)
+            	result = result.append([fold, k, str(metric), accuracy, str(transform)], ignore_index=True)
+print(result)  
